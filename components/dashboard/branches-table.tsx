@@ -1,27 +1,49 @@
 import { Branch } from '@/lib/supabase'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
 
 type BranchesTableProps = {
   branches: Branch[]
 }
 
 function getPerformanceColor(score: number): string {
-  if (score >= 71) return 'bg-green-500/20 text-green-400'
-  if (score >= 41) return 'bg-yellow-500/20 text-yellow-400'
-  return 'bg-red-500/20 text-red-400'
+  if (score >= 80) return 'bg-emerald-500/15 text-emerald-300 border-emerald-500/25'
+  if (score >= 60) return 'bg-amber-500/15 text-amber-300 border-amber-500/25'
+  return 'bg-red-500/15 text-red-300 border-red-500/25'
 }
 
 function getPerformanceLabel(score: number): string {
-  if (score >= 71) return 'Strong'
-  if (score >= 41) return 'Average'
+  if (score >= 80) return 'Strong'
+  if (score >= 60) return 'Monitor'
   return 'Needs Improvement'
+}
+
+function getPerformanceBarColor(score: number): string {
+  if (score >= 80) return 'bg-emerald-500'
+  if (score >= 60) return 'bg-amber-500'
+  return 'bg-red-500'
+}
+
+function clampScore(score: number) {
+  return Math.min(Math.max(score, 0), 100)
 }
 
 export function BranchesTable({ branches }: BranchesTableProps) {
   return (
     <Card className="bg-card border-border">
-      <CardHeader>
-        <CardTitle>Branch Performance Overview</CardTitle>
+      <CardHeader className="gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <CardTitle>Branch Performance Overview</CardTitle>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Required metrics for each branch: revenue, inquiries, staff count, and score.
+          </p>
+        </div>
+        <Badge
+          variant="outline"
+          className={branches.length === 5 ? 'border-emerald-500/30 text-emerald-300' : 'border-destructive/40 text-destructive'}
+        >
+          {branches.length} of 5 branches
+        </Badge>
       </CardHeader>
       <CardContent>
         <div className="overflow-x-auto">
@@ -32,10 +54,10 @@ export function BranchesTable({ branches }: BranchesTableProps) {
                   Branch Name
                 </th>
                 <th className="px-4 py-3 text-right text-sm font-semibold text-foreground">
-                  Monthly Revenue
+                  Monthly Revenue ($)
                 </th>
                 <th className="px-4 py-3 text-right text-sm font-semibold text-foreground">
-                  Open Inquiries
+                  Open Member Inquiries
                 </th>
                 <th className="px-4 py-3 text-right text-sm font-semibold text-foreground">
                   Staff Count
@@ -51,33 +73,27 @@ export function BranchesTable({ branches }: BranchesTableProps) {
                   <td className="px-4 py-3 text-sm font-medium text-foreground">
                     {branch.name}
                   </td>
-                  <td className="px-4 py-3 text-sm text-right text-chart-1 font-semibold">
+                  <td className="px-4 py-3 text-sm text-right text-chart-1 font-semibold tabular-nums">
                     ${branch.monthly_revenue.toLocaleString()}
                   </td>
-                  <td className="px-4 py-3 text-sm text-right text-chart-2 font-semibold">
+                  <td className="px-4 py-3 text-sm text-right text-chart-2 font-semibold tabular-nums">
                     {branch.open_inquiries}
                   </td>
-                  <td className="px-4 py-3 text-sm text-right text-foreground">
+                  <td className="px-4 py-3 text-sm text-right text-foreground tabular-nums">
                     {branch.staff_count}
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center justify-center gap-2">
-                      <div className="flex-1 bg-border rounded-full h-2 max-w-[100px]">
+                      <div className="h-2 w-24 overflow-hidden rounded-full bg-border">
                         <div
-                          className={`h-full rounded-full transition-all ${
-                            branch.performance_score >= 71
-                              ? 'bg-green-500'
-                              : branch.performance_score >= 41
-                              ? 'bg-yellow-500'
-                              : 'bg-red-500'
-                          }`}
-                          style={{ width: `${branch.performance_score}%` }}
+                          className={`h-full rounded-full transition-all ${getPerformanceBarColor(branch.performance_score)}`}
+                          style={{ width: `${clampScore(branch.performance_score)}%` }}
                         />
                       </div>
                       <span
-                        className={`text-xs font-bold px-2 py-1 rounded-md whitespace-nowrap ${getPerformanceColor(branch.performance_score)}`}
+                        className={`min-w-36 rounded-md border px-2 py-1 text-center text-xs font-bold tabular-nums whitespace-nowrap ${getPerformanceColor(branch.performance_score)}`}
                       >
-                        {branch.performance_score}%
+                        {branch.performance_score}% {getPerformanceLabel(branch.performance_score)}
                       </span>
                     </div>
                   </td>

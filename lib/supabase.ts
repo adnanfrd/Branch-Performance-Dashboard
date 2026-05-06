@@ -1,12 +1,26 @@
 import { createClient } from '@supabase/supabase-js'
+import type { SupabaseClient } from '@supabase/supabase-js'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-// Only create client if environment variables are available
-export const supabase = (supabaseUrl && supabaseAnonKey) 
-  ? createClient(supabaseUrl, supabaseAnonKey)
-  : null as any
+let supabaseClient: SupabaseClient | null = null
+
+export function hasSupabaseConfig() {
+  return Boolean(supabaseUrl && supabaseAnonKey)
+}
+
+export function getSupabaseClient() {
+  if (!supabaseUrl || !supabaseAnonKey) {
+    throw new Error('Supabase environment variables are not configured')
+  }
+
+  if (!supabaseClient) {
+    supabaseClient = createClient(supabaseUrl, supabaseAnonKey)
+  }
+
+  return supabaseClient
+}
 
 export type Branch = {
   id: string

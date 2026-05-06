@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
+import { getSupabaseClient } from '@/lib/supabase'
 
 export async function POST(request: NextRequest) {
   try {
@@ -12,6 +12,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    const supabase = getSupabaseClient()
     const { data, error } = await supabase.auth.signInWithPassword({
       email: email.toLowerCase(),
       password,
@@ -41,7 +42,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Login error:', error)
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: error instanceof Error ? error.message : 'Internal server error' },
       { status: 500 }
     )
   }

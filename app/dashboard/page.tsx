@@ -1,9 +1,10 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { LogOut, RefreshCw, Wifi, WifiOff } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Branch } from '@/lib/supabase'
+import { Branch, getSupabaseClient } from '@/lib/supabase'
 import { SummaryCards } from '@/components/dashboard/summary-cards'
 import { BranchesTable } from '@/components/dashboard/branches-table'
 
@@ -13,9 +14,15 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [lastUpdated, setLastUpdated] = useState<string>(new Date().toLocaleTimeString())
+  const [refreshing, setRefreshing] = useState(false)
+  const [liveStatus, setLiveStatus] = useState('Connecting to live updates')
 
-  const fetchBranches = async () => {
+  const fetchBranches = useCallback(async (background = false) => {
     try {
+      if (background) {
+        setRefreshing(true)
+      }
+
       setError('')
       const response = await fetch('/api/branches', {
         method: 'GET',
@@ -39,12 +46,60 @@ export default function DashboardPage() {
       console.error('Fetch error:', err)
     } finally {
       setLoading(false)
+      setRefreshing(false)
     }
-  }
+  }, [router])
 
   useEffect(() => {
     fetchBranches()
-  }, [])
+  }, [fetchBranches])
+
+  useEffect(() => {
+    let intervalId: ReturnType<typeof setInterval> | undefined
+
+    try {
+      const channel = getSupabaseClient()
+        .channel('branches-dashboard')
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'branches' },
+          () => {
+            fetchBranches(true)
+          },
+        )
+        .subscribe((status) => {
+          if (status === 'SUBSCRIBED') {
+            setLiveStatus('Live updates enabled')
+          }
+
+          if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
+            setLiveStatus('Refreshing every 30 seconds')
+          }
+        })
+
+      intervalId = setInterval(() => {
+        fetchBranches(true)
+      }, 30000)
+
+      return () => {
+        channel.unsubscribe()
+        if (intervalId) {
+          clearInterval(intervalId)
+        }
+      }
+    } catch (err) {
+      setLiveStatus('Refreshing every 30 seconds')
+      intervalId = setInterval(() => {
+        fetchBranches(true)
+      }, 30000)
+
+      return () => {
+        if (intervalId) {
+          clearInterval(intervalId)
+        }
+      }
+    }
+  }, [fetchBranches])
 
   const handleLogout = async () => {
     try {
@@ -72,6 +127,7 @@ export default function DashboardPage() {
               variant="outline"
               className="border-border text-foreground hover:bg-secondary"
             >
+              <LogOut className="h-4 w-4" aria-hidden="true" />
               Sign Out
             </Button>
           </div>
@@ -108,16 +164,26 @@ export default function DashboardPage() {
           </div>
         ) : branches.length > 0 ? (
           <>
-            <div className="mb-4 flex items-center justify-between">
-              <p className="text-sm text-muted-foreground">
-                Last updated: {lastUpdated}
-              </p>
+            <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
+                <p>Last updated: {lastUpdated}</p>
+                <p className="flex items-center gap-1.5">
+                  {liveStatus === 'Live updates enabled' ? (
+                    <Wifi className="h-4 w-4 text-emerald-400" aria-hidden="true" />
+                  ) : (
+                    <WifiOff className="h-4 w-4 text-amber-400" aria-hidden="true" />
+                  )}
+                  {liveStatus}
+                  {refreshing ? '...' : ''}
+                </p>
+              </div>
               <Button
-                onClick={fetchBranches}
+                onClick={() => fetchBranches(true)}
                 variant="outline"
                 size="sm"
                 className="border-border text-foreground hover:bg-secondary"
               >
+                <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} aria-hidden="true" />
                 Refresh Data
               </Button>
             </div>

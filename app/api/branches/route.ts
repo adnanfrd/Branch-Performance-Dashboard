@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
+import { getSupabaseClient } from '@/lib/supabase'
 
 export async function GET(request: NextRequest) {
   try {
@@ -12,9 +12,10 @@ export async function GET(request: NextRequest) {
       )
     }
 
+    const supabase = getSupabaseClient()
     const { data: branches, error } = await supabase
       .from('branches')
-      .select('*')
+      .select('id, name, monthly_revenue, open_inquiries, staff_count, performance_score, created_at, updated_at')
       .order('name', { ascending: true })
 
     if (error) {
@@ -29,7 +30,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('API error:', error)
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: error instanceof Error ? error.message : 'Internal server error' },
       { status: 500 }
     )
   }
