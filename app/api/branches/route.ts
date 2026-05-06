@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getSupabaseClient } from '@/lib/supabase'
+import { getSupabaseClientForUser } from '@/lib/supabase'
 
 export async function GET(request: NextRequest) {
   try {
@@ -12,7 +12,16 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    const supabase = getSupabaseClient()
+    const supabase = getSupabaseClientForUser(token)
+    const { data: authData, error: authError } = await supabase.auth.getUser(token)
+
+    if (authError || !authData.user) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
+
     const { data: branches, error } = await supabase
       .from('branches')
       .select('id, name, monthly_revenue, open_inquiries, staff_count, performance_score, created_at, updated_at')

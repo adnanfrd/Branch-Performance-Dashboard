@@ -22,6 +22,20 @@ export function getSupabaseClient() {
   return supabaseClient
 }
 
+export function getSupabaseClientForUser(accessToken: string) {
+  if (!supabaseUrl || !supabaseAnonKey) {
+    throw new Error('Supabase environment variables are not configured')
+  }
+
+  return createClient(supabaseUrl, supabaseAnonKey, {
+    global: {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    },
+  })
+}
+
 export type Branch = {
   id: string
   name: string
