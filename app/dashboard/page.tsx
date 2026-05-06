@@ -147,9 +147,7 @@ export default function DashboardPage() {
               <li>
                 <code className="bg-secondary/30 px-1 py-0.5 rounded">branches</code> table with the required fields
               </li>
-              <li>
-                <code className="bg-secondary/30 px-1 py-0.5 rounded">auth_users</code> table for authentication
-              </li>
+              <li>Supabase Auth users for sign-in</li>
               <li>Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY to environment variables</li>
             </ul>
           </div>
@@ -197,10 +195,11 @@ export default function DashboardPage() {
               <div className="text-center">
                 <p className="text-muted-foreground mb-4">No branch data available</p>
                 <Button
-                  onClick={fetchBranches}
+                  onClick={() => fetchBranches(true)}
                   variant="outline"
                   className="border-border text-foreground hover:bg-secondary"
                 >
+                  <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} aria-hidden="true" />
                   Try Again
                 </Button>
               </div>
