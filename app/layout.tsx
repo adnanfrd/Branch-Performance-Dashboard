@@ -9,7 +9,7 @@ const _geistMono = Geist_Mono({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: 'Branch Performance Dashboard',
   description: 'Real-time performance metrics for branch locations',
-  generator: 'v0.app',
+  generator: 'Next.js',
   icons: {
     icon: '/icon.png',
     shortcut: '/icon.png',
