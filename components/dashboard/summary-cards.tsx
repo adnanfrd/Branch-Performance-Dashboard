@@ -6,6 +6,12 @@ type SummaryCardsProps = {
   branches: Branch[]
 }
 
+const currencyFormatter = new Intl.NumberFormat('en-US', {
+  style: 'currency',
+  currency: 'USD',
+  maximumFractionDigits: 0,
+})
+
 export function SummaryCards({ branches }: SummaryCardsProps) {
   const totalRevenue = branches.reduce((sum, branch) => sum + branch.monthly_revenue, 0)
   const totalInquiries = branches.reduce((sum, branch) => sum + branch.open_inquiries, 0)
@@ -17,11 +23,7 @@ export function SummaryCards({ branches }: SummaryCardsProps) {
   const cards = [
     {
       title: 'Total Revenue',
-      value: new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD',
-        maximumFractionDigits: 0,
-      }).format(totalRevenue),
+      value: currencyFormatter.format(totalRevenue),
       description: 'Monthly revenue across all branches',
       color: 'text-chart-1',
       icon: DollarSign,

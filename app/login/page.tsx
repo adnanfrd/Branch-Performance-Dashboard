@@ -24,7 +24,7 @@ export default function LoginPage() {
       const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email.toLowerCase(), password }),
+        body: JSON.stringify({ email: email.trim().toLowerCase(), password }),
       })
 
       if (!response.ok) {
@@ -35,7 +35,7 @@ export default function LoginPage() {
       }
 
       router.push('/dashboard')
-    } catch (err) {
+    } catch {
       setError('An error occurred during login')
       setLoading(false)
     }
@@ -72,7 +72,7 @@ export default function LoginPage() {
                 <Input
                   id="password"
                   type={showPassword ? 'text' : 'password'}
-                  placeholder="••••••••"
+                  placeholder="Password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="bg-input border-border text-foreground placeholder:text-muted-foreground pr-10"
@@ -101,10 +101,6 @@ export default function LoginPage() {
               {loading ? 'Signing in...' : 'Sign In'}
             </Button>
           </form>
-
-          <div className="mt-6 p-4 bg-secondary/20 border border-border rounded-md">
-            <p className="text-xs text-muted-foreground mb-2">Use credentials stored in your Supabase database.</p>
-          </div>
         </CardContent>
       </Card>
     </div>

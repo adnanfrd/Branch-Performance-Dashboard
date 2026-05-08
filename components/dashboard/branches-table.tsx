@@ -15,6 +15,12 @@ type BranchesTableProps = {
   branches: Branch[]
 }
 
+const currencyFormatter = new Intl.NumberFormat('en-US', {
+  style: 'currency',
+  currency: 'USD',
+  maximumFractionDigits: 0,
+})
+
 function getPerformanceColor(score: number): string {
   if (score >= 80) return 'bg-emerald-500/15 text-emerald-300 border-emerald-500/25'
   if (score >= 60) return 'bg-amber-500/15 text-amber-300 border-amber-500/25'
@@ -50,19 +56,19 @@ export function BranchesTable({ branches }: BranchesTableProps) {
           <TableHeader>
             <TableRow className="border-border hover:bg-transparent">
               <TableHead className="px-4 py-3 text-sm font-semibold">
-                  Branch Name
+                Branch Name
               </TableHead>
               <TableHead className="px-4 py-3 text-right text-sm font-semibold">
-                  Monthly Revenue ($)
+                Monthly Revenue ($)
               </TableHead>
               <TableHead className="px-4 py-3 text-right text-sm font-semibold">
-                  Open Member Inquiries
+                Open Member Inquiries
               </TableHead>
               <TableHead className="px-4 py-3 text-right text-sm font-semibold">
-                  Staff Count
+                Staff Count
               </TableHead>
               <TableHead className="px-4 py-3 text-center text-sm font-semibold">
-                  Performance Score
+                Performance Score
               </TableHead>
             </TableRow>
           </TableHeader>
@@ -76,7 +82,7 @@ export function BranchesTable({ branches }: BranchesTableProps) {
                     {branch.name}
                   </TableCell>
                   <TableCell className="px-4 py-3 text-sm text-right text-chart-1 font-semibold tabular-nums">
-                    ${branch.monthly_revenue.toLocaleString()}
+                    {currencyFormatter.format(branch.monthly_revenue)}
                   </TableCell>
                   <TableCell className="px-4 py-3 text-sm text-right text-chart-2 font-semibold tabular-nums">
                     {branch.open_inquiries}

@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { AUTH_COOKIE_NAME } from '@/lib/auth-cookie'
 import { getSupabaseClientForUser } from '@/lib/supabase'
 
 export async function GET(request: NextRequest) {
   try {
-    // Verify auth
-    const token = request.cookies.get('auth_token')?.value
+    const token = request.cookies.get(AUTH_COOKIE_NAME)?.value
     if (!token) {
       return NextResponse.json(
         { error: 'Unauthorized' },
@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('API error:', error)
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Internal server error' },
+      { error: 'Internal server error' },
       { status: 500 }
     )
   }

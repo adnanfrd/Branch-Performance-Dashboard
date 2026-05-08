@@ -1,9 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { AUTH_COOKIE_NAME, authCookieOptions } from '@/lib/auth-cookie'
 import { getSupabaseClient } from '@/lib/supabase'
 
 export async function POST(request: NextRequest) {
   try {
-    const { email, password } = await request.json()
+    const body = await request.json().catch(() => null) as {
+      email?: unknown
+      password?: unknown
+    } | null
+    const email = typeof body?.email === 'string' ? body.email.trim().toLowerCase() : ''
+    const password = typeof body?.password === 'string' ? body.password : ''
 
     if (!email || !password) {
       return NextResponse.json(
@@ -14,7 +20,7 @@ export async function POST(request: NextRequest) {
 
     const supabase = getSupabaseClient()
     const { data, error } = await supabase.auth.signInWithPassword({
-      email: email.toLowerCase(),
+      email,
       password,
     })
 
@@ -25,16 +31,10 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Create session cookie
-    const response = NextResponse.json(
-      { success: true, userId: data.user.id },
-      { status: 200 }
-    )
+    const response = NextResponse.json({ success: true }, { status: 200 })
 
-    response.cookies.set('auth_token', data.session.access_token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+    response.cookies.set(AUTH_COOKIE_NAME, data.session.access_token, {
+      ...authCookieOptions,
       maxAge: data.session.expires_in,
     })
 
@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Login error:', error)
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Internal server error' },
+      { error: 'Internal server error' },
       { status: 500 }
     )
   }
