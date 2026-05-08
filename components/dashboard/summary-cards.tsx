@@ -50,32 +50,39 @@ export function SummaryCards({ branches }: SummaryCardsProps) {
     {
       title: 'Branches Displayed',
       value: `${branches.length}/5`,
-      description: 'Expected branch records shown',
+      description: 'Locations in view',
       color: branches.length === 5 ? 'text-chart-2' : 'text-destructive',
       icon: Building2,
     },
   ]
 
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5 mb-6">
-      {cards.map((card) => (
-        <Card key={card.title} className="bg-card border-border overflow-hidden">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              {card.title}
-            </CardTitle>
-            <card.icon className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-          </CardHeader>
-          <CardContent>
-            <div className={`text-2xl font-bold ${card.color} mb-1 tabular-nums`}>
-              {card.value}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              {card.description}
-            </p>
-          </CardContent>
-        </Card>
-      ))}
-    </div>
+    <section className="mb-6" aria-labelledby="executive-summary-heading">
+      <div className="mb-3 flex items-center justify-between">
+        <h2 id="executive-summary-heading" className="text-lg font-semibold text-foreground">
+          Executive Summary
+        </h2>
+      </div>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
+        {cards.map((card) => (
+          <Card key={card.title} className="bg-card border-border overflow-hidden">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                {card.title}
+              </CardTitle>
+              <card.icon className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+            </CardHeader>
+            <CardContent>
+              <div className={`text-2xl font-bold ${card.color} mb-1 tabular-nums`}>
+                {card.value}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {card.description}
+              </p>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    </section>
   )
 }

@@ -1,6 +1,15 @@
 import { Branch } from '@/lib/supabase'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Progress } from '@/components/ui/progress'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
 
 type BranchesTableProps = {
   branches: Branch[]
@@ -18,12 +27,6 @@ function getPerformanceLabel(score: number): string {
   return 'Needs Improvement'
 }
 
-function getPerformanceBarColor(score: number): string {
-  if (score >= 80) return 'bg-emerald-500'
-  if (score >= 60) return 'bg-amber-500'
-  return 'bg-red-500'
-}
-
 function clampScore(score: number) {
   return Math.min(Math.max(score, 0), 100)
 }
@@ -34,9 +37,6 @@ export function BranchesTable({ branches }: BranchesTableProps) {
       <CardHeader className="gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <CardTitle>Branch Performance Overview</CardTitle>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Required metrics for each branch: revenue, inquiries, staff count, and score.
-          </p>
         </div>
         <Badge
           variant="outline"
@@ -46,62 +46,63 @@ export function BranchesTable({ branches }: BranchesTableProps) {
         </Badge>
       </CardHeader>
       <CardContent>
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-border">
-                <th className="px-4 py-3 text-left text-sm font-semibold text-foreground">
+        <Table>
+          <TableHeader>
+            <TableRow className="border-border hover:bg-transparent">
+              <TableHead className="px-4 py-3 text-sm font-semibold">
                   Branch Name
-                </th>
-                <th className="px-4 py-3 text-right text-sm font-semibold text-foreground">
+              </TableHead>
+              <TableHead className="px-4 py-3 text-right text-sm font-semibold">
                   Monthly Revenue ($)
-                </th>
-                <th className="px-4 py-3 text-right text-sm font-semibold text-foreground">
+              </TableHead>
+              <TableHead className="px-4 py-3 text-right text-sm font-semibold">
                   Open Member Inquiries
-                </th>
-                <th className="px-4 py-3 text-right text-sm font-semibold text-foreground">
+              </TableHead>
+              <TableHead className="px-4 py-3 text-right text-sm font-semibold">
                   Staff Count
-                </th>
-                <th className="px-4 py-3 text-center text-sm font-semibold text-foreground">
+              </TableHead>
+              <TableHead className="px-4 py-3 text-center text-sm font-semibold">
                   Performance Score
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {branches.map((branch) => (
-                <tr key={branch.id} className="border-b border-border/50 hover:bg-secondary/30 transition-colors">
-                  <td className="px-4 py-3 text-sm font-medium text-foreground">
+              </TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {branches.map((branch) => {
+              const score = clampScore(branch.performance_score)
+
+              return (
+                <TableRow key={branch.id} className="border-border/50 hover:bg-secondary/30">
+                  <TableCell className="px-4 py-3 text-sm font-medium text-foreground">
                     {branch.name}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-right text-chart-1 font-semibold tabular-nums">
+                  </TableCell>
+                  <TableCell className="px-4 py-3 text-sm text-right text-chart-1 font-semibold tabular-nums">
                     ${branch.monthly_revenue.toLocaleString()}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-right text-chart-2 font-semibold tabular-nums">
+                  </TableCell>
+                  <TableCell className="px-4 py-3 text-sm text-right text-chart-2 font-semibold tabular-nums">
                     {branch.open_inquiries}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-right text-foreground tabular-nums">
+                  </TableCell>
+                  <TableCell className="px-4 py-3 text-sm text-right text-foreground tabular-nums">
                     {branch.staff_count}
-                  </td>
-                  <td className="px-4 py-3">
+                  </TableCell>
+                  <TableCell className="px-4 py-3">
                     <div className="flex items-center justify-center gap-2">
-                      <div className="h-2 w-24 overflow-hidden rounded-full bg-border">
-                        <div
-                          className={`h-full rounded-full transition-all ${getPerformanceBarColor(branch.performance_score)}`}
-                          style={{ width: `${clampScore(branch.performance_score)}%` }}
-                        />
-                      </div>
+                      <Progress
+                        value={score}
+                        className="[&>div]:bg-current h-2 w-24 text-emerald-500 data-[score=monitor]:text-amber-500 data-[score=needs-improvement]:text-red-500"
+                        data-score={score >= 80 ? 'strong' : score >= 60 ? 'monitor' : 'needs-improvement'}
+                      />
                       <span
-                        className={`min-w-36 rounded-md border px-2 py-1 text-center text-xs font-bold tabular-nums whitespace-nowrap ${getPerformanceColor(branch.performance_score)}`}
+                        className={`min-w-36 rounded-md border px-2 py-1 text-center text-xs font-bold tabular-nums whitespace-nowrap ${getPerformanceColor(score)}`}
                       >
-                        {branch.performance_score}% {getPerformanceLabel(branch.performance_score)}
+                        {score}% {getPerformanceLabel(score)}
                       </span>
                     </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                  </TableCell>
+                </TableRow>
+              )
+            })}
+          </TableBody>
+        </Table>
       </CardContent>
     </Card>
   )
